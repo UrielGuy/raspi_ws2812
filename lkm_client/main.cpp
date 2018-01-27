@@ -23,7 +23,7 @@ int main(void) {
 		++counter %= 3;
 		LEDs.SendFrame();
 		//break;
-		usleep(300000);
+		usleep(5000);
 		//std::getchar();
 	}
 	return 0;
