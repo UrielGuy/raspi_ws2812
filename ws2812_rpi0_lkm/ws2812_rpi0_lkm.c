@@ -136,14 +136,14 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 
 // Device is reaesd. send the frame out
 static int dev_release(struct inode *inodep, struct file *filep) {
-	uint32_t* bit_data;
-	uint32_t* end;
-	int i;
+	register uint32_t* bit_data;
+	register uint32_t* end;
+	register int i;
 	uint32_t irq1Val, irq2Val, basicIRQVal;
-	uint32_t next_val;
-	uint32_t counter;
-	struct GpioRegisters *pGpioRegisters;
-	struct InterruptsRegisters* pInterrupts;
+	register uint32_t next_val;
+	register uint32_t counter;
+	register struct GpioRegisters *pGpioRegisters;
+	register struct InterruptsRegisters* pInterrupts;
 	is_open = 0;
 
 	if (max_leds == 0)
@@ -165,13 +165,13 @@ static int dev_release(struct inode *inodep, struct file *filep) {
 	writel(0xFFFFFFFF, &pInterrupts->DisableIRQs2);
 	writel(0xFFFFFFFF, &pInterrupts->DisableIRQs1);
 
-	// get pointer to end of frame
-	end = frameBuff + (24 * max_leds);
-
+	
 	bit_data = frameBuff;
 	counter = 0;
 	// Clear all IO lines to 0.
 	writel_relaxed(all_bits, &pGpioRegisters->GPCLR[0]);
+	// get pointer to end of frame
+	end = frameBuff + (24 * max_leds);
 	// Prefetch and prime first 16 bytes
 	__builtin_prefetch(frameBuff);
 	// Time to prefetch
@@ -186,12 +186,12 @@ static int dev_release(struct inode *inodep, struct file *filep) {
 		if (counter == 0) writel(all_bits, &pGpioRegisters->GPCLR[0]);
 		writel(all_bits, &pGpioRegisters->GPSET[0]);
 		next_val = *bit_data & all_bits;
-		for (i = ((counter == 0) ? 1 : 32); --i; );
+		for (i = ((counter == 0) ? 1 : 80); --i; );
 		writel(next_val, &pGpioRegisters->GPCLR[0]);
 		__builtin_prefetch(bit_data + 1);
-		for (i = ((counter == 0) ? 25 : 55) ; --i; );
+		for (i = ((counter == 0) ? 55 : 120) ; --i; );
 		writel(all_bits, &pGpioRegisters->GPCLR[0]);
-		for (i = 28; --i; );
+		for (i = 90; --i; );
 		counter++;
 	}
 	
