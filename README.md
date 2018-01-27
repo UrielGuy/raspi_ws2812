@@ -1,7 +1,7 @@
 # raspi_ws2812
 A kernel module able to run as many WS2812 strips as there are GPIO pins on Raspberry Pi Zero. 
 This kernael module + library to use it will allow you to specify as many LED strips as raspberry pi have GPIO pins (27), and connect up to 1024 LEDs to each. The kernel module will recieve a frame over a char device, freeze all interrupts on the raspberry pi, basically halting the kernel. now it will bitbang out the WS2812 frames on all strips at the same time using the GPIO registers, and resume the kernel. Time of the kernel being frozen relative to the LED strip length, so I would recommend many short strips and not few long ones.
-If you have any comments, feel free to contact me via http://urielguy.com, or her
+If you have any comments, feel free to contact me via http://urielguy.com, or here.
 
 ## Requirements
 This module requires a Raspberry Pi 1/1B/Zero/ZeroW/ZeroWH. It will NOT run on Raspberry Pi 2/3, and will probably cause it to crash and burn. Maybe even literally. There is a branch in the repo for my attempts to get this to run on Raspberry Pi 3. I failed.
