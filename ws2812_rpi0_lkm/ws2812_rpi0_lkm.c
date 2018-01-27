@@ -173,9 +173,7 @@ static int dev_release(struct inode *inodep, struct file *filep) {
 	// Clear all IO lines to 0.
 	writel_relaxed(all_bits, &pGpioRegisters->GPCLR[0]);
 	// Prefetch and prime first 16 bytes
-	for (i = 0; i < 8; i++) {
-		__builtin_prefetch(frameBuff + i);
-	}
+	__builtin_prefetch(frameBuff);
 	// Time to prefetch
 	for (i = 120; --i; );
 	// Prefetch first value, just becaue better safe than sorry
@@ -190,8 +188,8 @@ static int dev_release(struct inode *inodep, struct file *filep) {
 		next_val = *bit_data & all_bits;
 		for (i = ((counter == 0) ? 1 : 32); --i; );
 		writel(next_val, &pGpioRegisters->GPCLR[0]);
-		__builtin_prefetch(bit_data + 8);
-		for (i = ((counter == 0) ? 5 : 55) ; --i; );
+		__builtin_prefetch(bit_data + 1);
+		for (i = ((counter == 0) ? 25 : 55) ; --i; );
 		writel(all_bits, &pGpioRegisters->GPCLR[0]);
 		for (i = 28; --i; );
 		counter++;
