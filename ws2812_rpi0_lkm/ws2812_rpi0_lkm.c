@@ -168,19 +168,18 @@ static int dev_release(struct inode *inodep, struct file *filep) {
 	// get pointer to end of frame
 	end = frameBuff + (24 * max_leds);
 
-	// Prefetch and prime first 16 bytes
-	for (i = 0; i < 16 ; i++) {
-		__builtin_prefetch(frameBuff + i);
-		writel(*(frameBuff + i), &pGpioRegisters->GPCLR[0]);
-		writel(0, &pGpioRegisters->GPSET[0]);
-	}
-
 	bit_data = frameBuff;
 	counter = 0;
-	// Prefetch first value, just becaue better safe than sorry
-	next_val = frameBuff[0];
 	// Clear all IO lines to 0.
 	writel_relaxed(all_bits, &pGpioRegisters->GPCLR[0]);
+	// Prefetch and prime first 16 bytes
+	for (i = 0; i < 8; i++) {
+		__builtin_prefetch(frameBuff + i);
+	}
+	// Time to prefetch
+	for (i = 120; --i; );
+	// Prefetch first value, just becaue better safe than sorry
+	next_val = frameBuff[0];
 	for (; bit_data != end; bit_data++) {
 		// To make sure first bit is not too long, we act differently if counter == 1. 
 		// If this is outside of the loop, bit 2 becomes problematic.
