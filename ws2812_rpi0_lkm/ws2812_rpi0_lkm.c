@@ -144,6 +144,7 @@ static int dev_release(struct inode *inodep, struct file *filep) {
 	register uint32_t counter;
 	register struct GpioRegisters *pGpioRegisters;
 	register struct InterruptsRegisters* pInterrupts;
+	register uint32_t my_allbits;
 	is_open = 0;
 
 	if (max_leds == 0)
@@ -166,6 +167,7 @@ static int dev_release(struct inode *inodep, struct file *filep) {
 	writel(0xFFFFFFFF, &pInterrupts->DisableIRQs1);
 
 	
+	my_allbits = all_bits;
 	counter = 0;
 	// Clear all IO lines to 0.
 	writel_relaxed(all_bits, &pGpioRegisters->GPCLR[0]);
@@ -177,20 +179,18 @@ static int dev_release(struct inode *inodep, struct file *filep) {
 	// Time to prefetch
 	for (i = 120; --i; );
 	// Prefetch first value, just becaue better safe than sorry
-	next_val = *bit_data  & all_bits;
+	next_val = *bit_data  & my_allbits;
 	for (; bit_data != end; bit_data++) {
 		// To make sure first bit is not too long, we act differently if counter == 1. 
 		// If this is outside of the loop, bit 2 becomes problematic.
 		// This loop sets all bits to 1, then clears all bits that need to be zero, and then all bits. 
-		if (counter == 0) writel(0, &pGpioRegisters->GPSET[0]);
-		if (counter == 0) writel(all_bits, &pGpioRegisters->GPCLR[0]);
-		writel(all_bits, &pGpioRegisters->GPSET[0]);
-		if (counter != 0) next_val = *bit_data & all_bits;
-		for (i = ((counter == 0) ? 1 : 80); --i; );
+		writel(my_allbits, &pGpioRegisters->GPSET[0]);
+		if (counter != 0) next_val = *bit_data & my_allbits;
+		if (counter != 0) for (i = 82; --i; );
 		writel(next_val, &pGpioRegisters->GPCLR[0]);
 		__builtin_prefetch(bit_data + 1);
 		for (i = ((counter == 0) ? 55 : 120) ; --i; );
-		writel(all_bits, &pGpioRegisters->GPCLR[0]);
+		writel(my_allbits, &pGpioRegisters->GPCLR[0]);
 		for (i = 90; --i; );
 		counter++;
 	}
