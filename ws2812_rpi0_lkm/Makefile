@@ -1,6 +1,6 @@
-obj-m+=ws2812_rpi0_lkm
+obj-m := ws2812_rpi0_lkm.o
 
 all:
-	make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) modules
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build/ M=$(shell pwd) modules
 clean:
-    make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) clean
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build/ M=$(shell pwd) clean
